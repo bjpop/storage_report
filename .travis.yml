@@ -1,0 +1,21 @@
+sudo: true
+dist: xenial 
+services:
+  - docker
+language: python 
+python:
+  - "3.5"
+
+before_install:
+  - pip3 install cwltool
+  - docker build -t storage_report .
+
+script:
+  # Both of these same tests, in Docker
+  # Functional tests
+  - docker run --entrypoint /storage_report/.travis/unit-test.sh storage_report
+  # Unit tests
+  - docker run --entrypoint /storage_report/functional_tests/storage_report-test.sh storage_report -p storage_report -d /storage_report/functional_tests/test_data -v
+
+  # CWL definition test
+  - cwltool storage_report.cwl --fasta_file functional_tests/test_data/two_sequence.fasta
